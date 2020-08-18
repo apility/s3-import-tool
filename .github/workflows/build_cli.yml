@@ -1,0 +1,64 @@
+on:
+  release:
+    types: [created]
+name: "Build CLI"
+jobs:
+  generate_aab:
+    name: Build CLI binary
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        OS: ["windows", "linux", "darwin", "freebsd"]
+        ARCH: ["386", "amd64"]
+      fail-fast: true
+    steps:
+      - name: Get app version from tag name
+        id: version
+        run: |
+          echo ::set-output name=VERSION::$(echo $REF | cut -d / -f 3 | cut -c2-)
+          echo ::set-output name=BUILD_NR::$(date +"%s")
+        env:
+          REF: ${{ github.ref }}
+      - uses: actions/checkout@v1
+      - uses: actions/setup-go@v2-beta
+        with:
+          go-version: "1.14.2"
+      - name: "Run build"
+        run: make build_cli
+        env:
+          GOOS: ${{ matrix.OS }}
+          GOARCH: ${{ matrix.ARCH }}
+          ROOT_NAME: "netflex-import"
+          BUILD_TIME: ${{ steps.version.outputs.BUILD_NR }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+
+      - name: Tar relevant files
+        if: matrix.OS == 'linux' || matrix.OS == 'freebsd'
+        run: cd dist && tar -czvf nfimp.tar.gz $ROOT_NAME
+        env:
+          ROOT_NAME: "netflex-import"
+      - name: ZIP relevant files
+        if: matrix.OS != 'linux' && matrix.OS != 'freebsd'
+        run: cd dist && zip nfimp.zip $ROOT_NAME
+        env:
+          ROOT_NAME: "netflex-import"
+      - name: Upload Zipped assets
+        if: matrix.OS != 'linux' && matrix.OS != 'freebsd'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/nfimp.zip
+          asset_name: nfimp-v${{ steps.version.outputs.VERSION}}-${{ matrix.OS }}-${{ matrix.ARCH }}-${{ steps.version.outputs.BUILD_NR }}.zip
+          asset_content_type: "application/octet-stream"
+      - name: Upload Tarred assets
+        if: matrix.OS == 'linux' || matrix.OS == 'freebsd'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/nfimp.tar.gz
+          asset_name: nfimp-v${{ steps.version.outputs.VERSION}}-${{ matrix.OS }}-${{ matrix.ARCH }}-${{ steps.version.outputs.BUILD_NR }}.tar.gz
+          asset_content_type: "application/octet-stream"
