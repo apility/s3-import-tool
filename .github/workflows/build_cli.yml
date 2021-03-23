@@ -19,8 +19,11 @@ jobs:
           echo ::set-output name=BUILD_NR::$(date +"%s")
         env:
           REF: ${{ github.ref }}
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       - uses: actions/checkout@v1
       - uses: actions/setup-go@v2-beta
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         with:
           go-version: "1.14.2"
       - name: "Run build"
