@@ -7,3 +7,6 @@ build_cli:
 		-o "dist/${ROOT_NAME}" \
 		-ldflags "-X main.rootName=${ROOT_NAME} -X main.buildTime=${BUILD_TIME} -X main.versionNumber=${VERSION}" \
 		./cmd/*.go
+
+test: build_cli
+	dist/netflex-import upload -b test -r -v -d test/*

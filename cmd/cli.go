@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -20,6 +21,10 @@ func main() {
 		},
 	}
 	appendUploadCommand(rootCmd)
+
+	viper.AddConfigPath(".")
+	viper.SetEnvPrefix("nf")
+	viper.AutomaticEnv()
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Printf("Error: %s\r\n", err)
 		os.Exit(1)

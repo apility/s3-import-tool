@@ -11,6 +11,7 @@ type Configuration struct {
 	BucketName         string   `mapstructure:"bucket_name"`
 	RecursiveSearch    bool     `mapstructure:"recursive"`
 	DeleteWhenUploaded bool     `mapstructure:"delete_when_uploaded"`
+	DryRun 			   bool     `mapstructure:"dry_run"`
 	BasePath           string   `mapstructure:"base_path"`
 	Paths              []string `mapstructure:"paths"`
 }

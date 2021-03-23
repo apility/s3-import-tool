@@ -37,9 +37,16 @@ func (c Configuration) CreateTargetsList() ([]Target, error) {
 			return nil, fmt.Errorf("Unable to traverse paths for glob %d: %s", i, err)
 		}
 		for _, file := range files {
-			targets = append(targets, Target{
-				LocalFilename: file,
-			})
+			info, err := os.Stat(file)
+			if err != nil {
+				fmt.Printf("Error: Could not check file: %s: %s\r\n", file, err.Error())
+				continue
+			}
+			if info.IsDir() == false {
+				targets = append(targets, Target{
+					LocalFilename: file,
+				})
+			}
 		}
 	}
 	return targets, nil
