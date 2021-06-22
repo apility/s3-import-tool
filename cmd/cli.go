@@ -20,9 +20,13 @@ func main() {
 			return nil
 		},
 	}
+
+	rootCmd.
+		PersistentFlags().
+		BoolP("verbose", "v", false, "Verbose output")
+
 	appendUploadCommand(rootCmd)
 
-	viper.AddConfigPath(".")
 	viper.SetEnvPrefix("nf")
 	viper.AutomaticEnv()
 	if err := rootCmd.Execute(); err != nil {

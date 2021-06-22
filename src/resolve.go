@@ -32,7 +32,7 @@ func (c Configuration) CreateTargetsList() ([]Target, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Unable to parse argument %d, %s", i, err)
 		}
-		files, err := expandGlob(abs, c.RecursiveSearch)
+		files, err := expandGlob(abs, c.RecursiveSearch, true)
 		if err != nil {
 			return nil, fmt.Errorf("Unable to traverse paths for glob %d: %s", i, err)
 		}
@@ -52,7 +52,7 @@ func (c Configuration) CreateTargetsList() ([]Target, error) {
 	return targets, nil
 }
 
-func expandGlob(path string, recursive bool) ([]string, error) {
+func expandGlob(path string, recursive bool, verbose bool) ([]string, error) {
 	filenames, err := filepath.Glob(path)
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func expandGlob(path string, recursive bool) ([]string, error) {
 			})
 
 			for _, file := range files {
-				dirContents, err := expandGlob(file, recursive)
+				dirContents, err := expandGlob(file, recursive, verbose)
 				if err != nil {
 					return nil, fmt.Errorf("Unable to expand %s", file)
 				}
@@ -83,5 +83,6 @@ func expandGlob(path string, recursive bool) ([]string, error) {
 			//filenames = append(filenames, fInfo.Name())
 		}
 	}
+
 	return filenames, nil
 }

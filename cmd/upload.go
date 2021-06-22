@@ -70,7 +70,10 @@ Example:
 				fmt.Println(target.ToString(config))
 			}
 			if dryRun != true {
-				src.UploadFile(target, config)
+				_, err := src.UploadFile(target, config)
+				if err != nil && verbose {
+					fmt.Printf("Error: %s", err)
+				}
 			}
 		}
 		return nil
