@@ -22,21 +22,30 @@ func UploadFile(file Target, config Configuration) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("Unable to open file when trying to upload: %s", err)
 	}
-	defer fp.Close()
+	defer (func() {
+		err := fp.Close()
+		if err != nil {
+			fmt.Println("Failed to close file: %s", err)
+		}
+	})()
 
 	fileInfo, _ := fp.Stat()
-	var size int64 = fileInfo.Size()
+	size := fileInfo.Size()
 	buffer := make([]byte, size)
-	fp.Read(buffer)
+	byteCount, err := fp.Read(buffer)
+
+	if err != nil {
+		return byteCount, fmt.Errorf("could not open file: %s", err)
+	}
 
 	s3Key, _ := file.GetS3ObjectKey(config)
 
-	s3.New(s).PutObject(&s3.PutObjectInput{
+	_, err = s3.New(s).PutObject(&s3.PutObjectInput{
 		Bucket:        &config.BucketName,
 		Key:           &s3Key,
 		Body:          bytes.NewReader(buffer),
 		ContentLength: aws.Int64(size),
 	})
 
-	return 0, nil
+	return byteCount, err
 }
